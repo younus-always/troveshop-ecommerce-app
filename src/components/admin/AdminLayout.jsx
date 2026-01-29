@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from "react"
-// import Loading from "../Loading"
+import Loading from "../Loading"
 import Link from "next/link"
 import { ArrowRightIcon } from "lucide-react"
 import AdminNavbar from "./AdminNavbar"
@@ -21,7 +21,7 @@ const AdminLayout = ({ children }) => {
       }, [])
 
       return loading ? (
-            <div>Loading...</div>
+            <Loading />
       ) : isAdmin ? (
             <div className="flex flex-col h-screen">
                   <AdminNavbar />
