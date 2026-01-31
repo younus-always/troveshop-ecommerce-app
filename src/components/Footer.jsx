@@ -40,9 +40,9 @@ const Footer = () => {
       ];
 
       const socialIcons = [
-            { icon: FacebookIcon, link: "https://www.facebook.com" },
+            { icon: FacebookIcon, link: "https://www.facebook.com/younus.always" },
             { icon: InstagramIcon, link: "https://www.instagram.com" },
-            { icon: TwitterIcon, link: "https://twitter.com" },
+            { icon: TwitterIcon, link: "https://twitter.com/younus-always" },
             { icon: LinkedinIcon, link: "https://www.linkedin.com" },
       ]
 

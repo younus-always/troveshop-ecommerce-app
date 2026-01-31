@@ -1,4 +1,3 @@
-"use client";
 import { ourSpecsData } from "@/assets/assets";
 import Title from "./Title";
 
