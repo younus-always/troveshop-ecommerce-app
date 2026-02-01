@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 
 
-export default function ProductPage() {
+export default function Product() {
       const { productId } = useParams();
       const [product, setProduct] = useState();
       const products = useSelector(state => state.product.list);
