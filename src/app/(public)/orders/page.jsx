@@ -5,7 +5,7 @@ import PageTitle from "@/components/PageTitle";
 import { useState } from "react";
 
 
-export default function Orders() {
+export default function OrdersPage() {
       const [orders, setOrders] = useState(orderDummyData);
 
       return (
