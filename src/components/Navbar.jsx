@@ -14,6 +14,7 @@ export default function Navbar() {
       const handleSearch = (e) => {
             e.preventDefault();
             router.push(`/shop?search=${search}`);
+            setSearch(""); // reset search field
       };
 
       return (
