@@ -1,6 +1,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 import Counter from '@/components/Counter';
+import OrderSummary from '@/components/OrderSummary';
 import PageTitle from '@/components/PageTitle';
 import { deleteItemFromCart } from '@/lib/features/cart/cartSlice';
 import { Trash2Icon } from 'lucide-react';
@@ -94,7 +95,7 @@ export default function CartPage() {
                                           }
                                     </tbody>
                               </table>
-                              {/* <OrderSummary totalPrice={totalPrice} items={cartArray} /> */}
+                              <OrderSummary totalPrice={totalPrice} items={cartArray} />
                         </div>
                   </div>
             </div>
