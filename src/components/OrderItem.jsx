@@ -3,9 +3,11 @@ import { DotIcon } from 'lucide-react';
 import Image from 'next/image';
 import Rating from './Rating';
 import RatingModal from './RatingModal';
+import { useState } from 'react';
+import { useSelector } from 'react-redux';
 
 
-export default function OrderItem() {
+export default function OrderItem({ order }) {
       const [ratingModal, setRatingModal] = useState(null);
       const { ratings } = useSelector(state => state.rating);
       const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || '$';

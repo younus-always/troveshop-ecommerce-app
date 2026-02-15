@@ -10,6 +10,7 @@ export const metadata = {
   title: "TroveShop. - Shop smarter",
   description: "TroveShop. - Shop smarter",
 };
+
 export default function RootLayout({ children }) {
   return (
     <ClerkProvider>

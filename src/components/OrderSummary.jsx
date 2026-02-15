@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 
 
-export default function OrderSummary() {
+export default function OrderSummary({ totalPrice, items }) {
       const router = useRouter();
       const [coupon, setCoupon] = useState('');
       const [paymentMethod, setPaymentMethod] = useState('COD');
