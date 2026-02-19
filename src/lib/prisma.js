@@ -9,7 +9,7 @@ neonConfig.poolQueryViaFetch = true;
 const connectionString = `${process.env.DATABASE_URL}`;
 
 const adapter = new PrismaNeon({ connectionString });
-const prisma = new PrismaClient({ adapter });
+const prisma = prisma.global || new PrismaClient({ adapter });
 
 if (process.env.NODE_ENV === "development") global.prisma = prisma;
 
