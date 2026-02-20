@@ -1,15 +1,18 @@
 import { serve } from "inngest/next";
-import { inngest } from "../../../inngest/client";
-import { syncUserCreation } from "@/inngest/functions";
-import { syncUserUpdation } from "@/inngest/functions";
-import { syncUserDeletion } from "@/inngest/functions";
+import { inngest } from "@/inngest/client";
+import {
+      createUserFunction,
+      deleteUserFunction,
+      updateUserFunction
+} from "@/inngest/functions";
 
-// Create an API that serves zero functions
+export const dynamic = "force-dynamic";
+
 export const { GET, POST, PUT } = serve({
       client: inngest,
       functions: [
-            syncUserCreation,
-            syncUserUpdation,
-            syncUserDeletion,
+            createUserFunction(inngest),
+            updateUserFunction(inngest),
+            deleteUserFunction(inngest),
       ],
 });
