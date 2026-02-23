@@ -67,3 +67,24 @@ export const POST = async (request) => {
             )
       }
 };
+
+// get all products for a seller
+export const GET = async (request) => {
+      try {
+            const { userId } = getAuth(request);
+            const storeId = authSeller(userId);
+
+            if (!storeId) {
+                  return NextResponse.json({ error: "Not authorized" }, { status: 401 });
+            };
+
+            const products = await prisma.product.findMany({ where: { storeId } });
+            return NextResponse.json({ products }); 
+      } catch (err) {
+            console.log(err);
+            return NextResponse.json(
+                  { error: err.code || err.message },
+                  { status: 400 }
+            )
+      }
+};
