@@ -1,16 +1,23 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 import Loading from "@/components/Loading";
+import { useAuth, useUser } from "@clerk/nextjs";
+import axios from "axios";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 
 export default function CreateStore() {
+      const { user } = useUser();
+      const { getToken } = useAuth();
+      const router = useRouter();
+
       const [loading, setLoading] = useState(true);
       const [message, setMessage] = useState("");
       const [status, setStatus] = useState("");
       const [alreadySubmitted, setAlreadySubmitted] = useState(false);
-
       const [storeInfo, setStoreInfo] = useState({
             name: "",
             username: "",
@@ -21,23 +28,84 @@ export default function CreateStore() {
             description: "",
       });
 
-      const onChangeHandler = (e) => setStoreInfo({ ...storeInfo, [e.target.name]: e.target.value });
+      const onChangeHandler = (e) =>
+            setStoreInfo({ ...storeInfo, [e.target.name]: e.target.value });
 
-      const onSubmitHandler = (e) => {
+      const onSubmitHandler = async (e) => {
             e.preventDefault();
-            // Logic to submit the store details
+            if (!user) {
+                  return toast("Please login to continue")
+            };
+
+            try {
+                  const token = await getToken();
+                  const formData = new FormData();
+
+                  formData.append("name", storeInfo.name);
+                  formData.append("email", storeInfo.email);
+                  formData.append("username", storeInfo.username);
+                  formData.append("contact", storeInfo.contact);
+                  formData.append("address", storeInfo.address);
+                  formData.append("image", storeInfo.image);
+                  formData.append("description", storeInfo.description);
+
+                  const { data } = await axios.post("/api/store/create", formData, { headers: { Authorization: `Bearer ${token}` } });
+
+                  toast.success(data.message);
+                  await fetchSellerStatus();
+            } catch (err) {
+                  console.log(err);
+                  toast.error(err?.response?.data?.error || err.message);
+            }
       };
 
-      const fetchSellerStatus = () => {
-            // Logic to check if the store is already submitted
+      const fetchSellerStatus = async () => {
+            const token = await getToken();
 
-            setLoading(false)
+            try {
+                  const { data } = await axios.get("/api/store/create", { headers: { Authorization: `Bearer ${token}` } });
+
+                  if (["approved", "rejected", "pending"].includes(data.status)) {
+                        setStatus(data.status);
+                        setAlreadySubmitted(true);
+                        switch (data.status) {
+                              case "approved":
+                                    setMessage("Your store has been approved, you can now add products to your store from database.")
+                                    setTimeout(() => router.push("/store"), 5000)
+                                    break;
+                              case "rejected":
+                                    setMessage("Your store has been rejected, contact the admin for more details.")
+                                    break;
+                              case "pending":
+                                    setMessage("Your store has been pending, please wait for admin to approve your store.")
+                                    break;
+                              default:
+                                    break;
+                        }
+                  } else {
+                        setAlreadySubmitted(false);
+                  };
+            } catch (err) {
+                  console.log(err);
+                  toast.error(err?.response?.data?.error || err.message);
+            }
+            setLoading(false);
       };
 
       useEffect(() => {
-            fetchSellerStatus();
-      }, []);
+            if (user) {
+                  fetchSellerStatus();
+            }
+      }, [user]);
 
+
+      if (!user) {
+            return (
+                  <div className="min-h-[80vh] mx-6 flex items-center justify-center text-slate-400">
+                        <h1 className="text-2xl font-semibold sm:text-4xl">Please <span className="text-slate-500">Login</span> to continue</h1>
+                  </div>
+            )
+      }
 
       return loading ? <Loading />
             : <>
