@@ -33,3 +33,29 @@ export const POST = async (request) => {
             NextResponse.json({ error: err?.request?.data?.error || err.message }, { status: 400 });
       }
 };
+
+// Get all pending & rejected stores
+export const GET = async (request) => {
+      try {
+            const { userId } = getAuth(request);
+            const isAdmin = await authAdmin(userId);
+
+            if (!isAdmin) {
+                  return NextResponse.json({ error: "Not authorized" }, { status: 401 })
+            };
+
+            const stores = await prisma.store.findMany({
+                  where: {
+                        status: {
+                              in: ["pending", "rejected"]
+                        }
+                  },
+                  include: { user: true }
+            });
+
+            NextResponse.json({ stores });
+      } catch (err) {
+            console.error(err);
+            NextResponse.json({ error: err?.request?.data?.error || err.message }, { status: 400 });
+      }
+}
