@@ -1,7 +1,8 @@
 "use client";
-import { storesDummyData } from "@/assets/assets";
 import StoreInfo from "@/components/admin/StoreInfo";
 import Loading from "@/components/Loading";
+import { useAuth, useUser } from "@clerk/nextjs";
+import axios from "axios";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -9,24 +10,44 @@ import toast from "react-hot-toast";
 export default function AdminStores() {
       const [loading, setLoading] = useState(true);
       const [stores, setStores] = useState([]);
+      const { user } = useUser();
+      const { getToken } = useAuth();
 
       const toggleIsActive = async (storeId) => {
-            // Logic to toggle the status of a store
-
+            try {
+                  const token = await getToken();
+                  const { data } = await axios.get(
+                        "/api/admin/toggle-store",
+                        { storeId },
+                        { headers: { Authorization: `Bearer ${token}` } }
+                  );
+                  await fetchStores();
+                  toast.success(data.message);
+            } catch (err) {
+                  toast.error(err?.response?.data?.error || err.message);
+            }
       };
 
       const fetchStores = async () => {
             try {
-                  const data = storesDummyData;
-                  setStores(data);
+                  const token = await getToken();
+                  const { data } = await axios.get(
+                        "/api/admin/store",
+                        { headers: { Authorization: `Bearer ${token}` } }
+                  );
+                  setStores(data.stores);
+            } catch (err) {
+                  toast.error(err?.response?.data?.error || err.message);
             } finally {
                   setLoading(false);
-            };
+            }
       };
 
       useEffect(() => {
-            fetchStores();
-      }, []);
+            if (user) {
+                  fetchStores();
+            }
+      }, [user]);
 
 
       return loading ? <Loading />

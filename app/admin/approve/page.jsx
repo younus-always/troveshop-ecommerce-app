@@ -1,7 +1,8 @@
 "use client";
-import { storesDummyData } from "@/assets/assets";
 import StoreInfo from "@/components/admin/StoreInfo";
 import Loading from "@/components/Loading";
+import { useAuth, useUser } from "@clerk/nextjs";
+import axios from "axios";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -9,18 +10,44 @@ import toast from "react-hot-toast";
 export default function AdminApprove() {
       const [stores, setStores] = useState([])
       const [loading, setLoading] = useState(true)
+      const { user } = useUser();
+      const { getToken } = useAuth();
 
       const handleApprove = async ({ storeId, status }) => {
-            // Logic to approve a store     
+            try {
+                  const token = await getToken();
+                  const { data } = await axios.post(
+                        "/api/admin/approve-store",
+                        { storeId, status },
+                        { headers: { Authorization: `Bearer ${token}` } }
+                  );
+                  toast.success(data.message);
+                  await fetchStores();
+            } catch (err) {
+                  toast.error(err?.response?.data?.error || err.message);
+            }
+      };
+
+      const fetchStores = async () => {
+            try {
+                  const token = await getToken();
+                  const { data } = await axios.get(
+                        "/api/admin/approve-store",
+                        { headers: { Authorization: `Bearer ${token}` } }
+                  );
+                  setStores(data.stores);
+            } catch (err) {
+                  toast.error(err?.response?.data?.error || err.message);
+            } finally {
+                  setLoading(false);
+            }
       };
 
       useEffect(() => {
-            const fetchStores = () => {
-                  setStores(storesDummyData)
-                  setLoading(false)
-            };
-            fetchStores();
-      }, []);
+            if (user) {
+                  fetchStores();
+            }
+      }, [user]);
 
 
       return loading ? <Loading />
@@ -37,8 +64,14 @@ export default function AdminApprove() {
 
                                                 {/* Actions */}
                                                 <div className="flex gap-3 pt-2 flex-wrap">
-                                                      <button onClick={() => toast.promise(handleApprove({ storeId: store.id, status: 'approved' }), { loading: "approving" })} className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm" >Approve</button>
-                                                      <button onClick={() => toast.promise(handleApprove({ storeId: store.id, status: 'rejected' }), { loading: 'rejecting' })} className="px-4 py-2 bg-slate-500 text-white rounded hover:bg-slate-600 text-sm" >Reject</button>
+                                                      <button
+                                                            onClick={() => toast.promise(handleApprove({ storeId: store.id, status: 'approved' }), { loading: "approving" })} className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm">
+                                                            Approve
+                                                      </button>
+                                                      <button
+                                                            onClick={() => toast.promise(handleApprove({ storeId: store.id, status: 'rejected' }), { loading: 'rejecting' })} className="px-4 py-2 bg-slate-500 text-white rounded hover:bg-slate-600 text-sm">
+                                                            Reject
+                                                      </button>
                                                 </div>
                                           </div>
                                     ))}
