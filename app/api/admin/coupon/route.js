@@ -44,3 +44,21 @@ export const DELETE = async (request) => {
             return NextResponse.json({ error: err.code || err.message }, { status: 400 });
       }
 };
+
+// Get all coupons
+export const GET = async (request) => {
+      try {
+            const { userId } = getAuth();
+            const isAdmin = await authAdmin(userId);
+
+            if (!isAdmin) {
+                  return NextResponse.json({ error: "Not authorized" }, { status: 401 });
+            };
+
+            const coupons = await prisma.coupon.findMany({});
+            return NextResponse.json({ coupons });
+      } catch (err) {
+            console.error(err);
+            return NextResponse.json({ error: err.code || err.message }, { status: 400 });
+      }
+};

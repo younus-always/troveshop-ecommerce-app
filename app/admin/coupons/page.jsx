@@ -1,10 +1,14 @@
 "use client";
 import { couponDummyData } from "@/assets/assets";
+import { useAuth } from "@clerk/nextjs";
+import axios from "axios";
 import { DeleteIcon } from "lucide-react";
 import { useState } from "react";
+import toast from "react-hot-toast";
 
 
 export default function AdminCoupons() {
+      const { getToken } = useAuth();
       const [coupons, setCoupons] = useState(couponDummyData);
       const [newCoupon, setNewCoupon] = useState({
             code: '',
@@ -16,9 +20,37 @@ export default function AdminCoupons() {
             expiresAt: new Date()
       });
 
-      const handleAddCoupon = (e) => {
+
+      const fetchCoupons = async () => {
+            try {
+                  const token = getToken();
+                  const { data } = await axios.get("/api/admin/coupon",
+                        { headers: { Authorization: `Bearer ${token}` } });
+                  setCoupons(data);
+            } catch (err) {
+                  toast.error(err?.response?.data?.error || err.message);
+            }
+      };
+
+      const handleAddCoupon = async (e) => {
             e.preventDefault();
-            // logic to add coupon
+            try {
+                  const token = await getToken();
+                  const couponToSubmit = {
+                        ...newCoupon,
+                        discount: Number(newCoupon.discount),
+                        expiresAt: new Date(newCoupon.expiresAt)
+                  };
+
+                  const { data } = await axios.post("/api/admin/coupon",
+                        { coupon: couponToSubmit },
+                        { headers: { Authorization: `Bearer ${token}` } });
+
+                  toast.success(data.message);
+                  await fetchCoupons();
+            } catch (err) {
+                  toast.error(err?.response?.data?.error || err.message);
+            }
       };
 
       const deleteCoupon = (code) => {
