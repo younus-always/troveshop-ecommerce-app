@@ -53,8 +53,20 @@ export default function AdminCoupons() {
             }
       };
 
-      const deleteCoupon = (code) => {
-            // logic to delete coupon
+      const deleteCoupon = async (code) => {
+            try {
+                  const confirm = window.confirm("Are you sure you want to delete this coupon?");
+                  if (!confirm) return;
+
+                  const token = await getToken();
+                  await axios.delete(`/api/admin/coupon?code=${code}`,
+                        { headers: { Authorization: `Bearer ${token}` } });
+
+                  await fetchCoupons();
+                  toast.success("Coupon deleted successfully");
+            } catch (err) {
+                  toast.error(err?.response?.data?.error || err.message);
+            }
       };
 
       const handleChange = (e) => setNewCoupon({ ...newCoupon, [e.target.name]: e.target.value });

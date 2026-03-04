@@ -4,6 +4,7 @@ import {
       createUserFunction,
       updateUserFunction,
       deleteUserFunction,
+      deleteCouponOnExpiry,
 } from "@/inngest/functions";
 
 export const runtime = "nodejs";
@@ -15,6 +16,7 @@ const handler = serve({
             createUserFunction(inngest),
             updateUserFunction(inngest),
             deleteUserFunction(inngest),
+            deleteCouponOnExpiry(inngest),
       ],
 });
 
