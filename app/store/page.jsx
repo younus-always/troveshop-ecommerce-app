@@ -1,13 +1,16 @@
 "use client";
-import { dummyStoreDashboardData } from "@/assets/assets";
 import Loading from "@/components/Loading";
+import { useAuth } from "@clerk/nextjs";
+import axios from "axios";
 import { StarIcon } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import toast from "react-hot-toast";
 
 
 export default function Dashboard() {
+      const { getToken } = useAuth();
       const router = useRouter();
       const [loading, setLoading] = useState(true);
       const [dashboardData, setDashboardData] = useState({
@@ -25,12 +28,22 @@ export default function Dashboard() {
             { title: 'Total Ratings', value: dashboardData.ratings.length, icon: StarIcon },
       ];
 
-      useEffect(() => {
-            const fetchDashboardData = async () => {
-                  setDashboardData(dummyStoreDashboardData)
-                  setLoading(false)
-            };
+      const fetchDashboardData = async () => {
+            try {
+                  const token = await getToken();
+                  const { data } = await axios.get(
+                        "/api/store/dashboard",
+                        { headers: { Authorization: `Bearer ${token}` } }
+                  );
+                  setDashboardData(data.dashboardData);
+            } catch (err) {
+                  toast.error(err?.response?.data?.error || err.message);
+            } finally {
+                  setLoading(false);
+            }
+      };
 
+      useEffect(() => {
             fetchDashboardData()
       }, []);
 

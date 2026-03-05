@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 import Loading from '../Loading';
 import Link from 'next/link';
@@ -6,16 +5,31 @@ import { ArrowRightIcon } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import SellerNavbar from "./StoreNavbar";
 import SellerSidebar from './StoreSidebar';
+import { useAuth } from '@clerk/nextjs';
+import axios from 'axios';
 
 export default function StoreLayout() {
+
+      const { getToken } = useAuth();
       const [isSeller, setIsSeller] = useState(false);
       const [loading, setLoading] = useState(true);
       const [storeInfo, setStoreInfo] = useState(null);
 
       const fetchIsSeller = async () => {
-            setIsSeller(true)
-            setStoreInfo(dummyStoreData)
-            setLoading(false)
+            try {
+                  const token = await getToken();
+                  const { data } = await axios.get(
+                        "/api/store/is-seller",
+                        { headers: { Authorization: `Bearer ${token}` } }
+                  );
+
+                  setIsSeller(data.isSeller);
+                  setStoreInfo(data.storeInfo);
+            } catch (err) {
+                  console.error(err);
+            } finally {
+                  setLoading(false);
+            }
       };
 
       useEffect(() => {
@@ -30,9 +44,7 @@ export default function StoreLayout() {
                   <SellerNavbar />
                   <div className="flex flex-1 items-start h-full overflow-y-scroll no-scrollbar">
                         <SellerSidebar storeInfo={storeInfo} />
-                        <div className="flex-1 h-full p-5 lg:pl-12 lg:pt-12 overflow-y-scroll">
-                              {children}
-                        </div>
+                        <div className="flex-1 h-full p-5 lg:pl-12 lg:pt-12 overflow-y-scroll">{children}</div>
                   </div>
             </div>
       ) : (
