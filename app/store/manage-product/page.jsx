@@ -1,30 +1,59 @@
 "use client";
 import { productDummyData } from "@/assets/assets";
 import Loading from "@/components/Loading";
+import { useAuth, useUser } from "@clerk/nextjs";
+import axios from "axios";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 
 export default function StoreManageProducts() {
+      const { getToken } = useAuth();
+      const { user } = useUser();
       const [loading, setLoading] = useState(true);
       const [products, setProducts] = useState([]);
 
       const fetchProducts = async () => {
             try {
-                  const data =  productDummyData;
-                  setProducts(data);
-            } finally {
+                  const token = await getToken();
+                  const { data } = await axios.get("/api/store/product", { headers: { Authorization: `Bearer ${token}` } });
+                  setProducts(data.products.sort(
+                        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+                  ));
+            } catch (err) {
+                  toast.error(err?.response?.data?.error || err.message);
+            }
+            finally {
                   setLoading(false);
             }
       };
 
       const toggleStock = async (productId) => {
-            // Logic to toggle the stock of a product
+            try {
+                  const token = await getToken();
+                  const { data } = await axios.post(
+                        "/api/store/product",
+                        { productId },
+                        { headers: { Authorization: `Bearer ${token}` } }
+                  );
+                  setProducts(prev => prev.map(product =>
+                        product.id !== productId
+                              ? product
+                              : { ...product, inStock: !product.inStock }
+                  ));
+
+                  toast.success(data.message);
+            } catch (err) {
+                  toast.error(err?.response?.data?.error || err.message);
+            }
       };
 
       useEffect(() => {
-            fetchProducts()
-      }, []);
+            if (user) {
+                  fetchProducts()
+            }
+      }, [user]);
 
 
       return loading ? <Loading />
