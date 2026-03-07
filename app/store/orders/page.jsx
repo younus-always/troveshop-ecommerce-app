@@ -1,25 +1,24 @@
 "use client";
 import { orderDummyData } from "@/assets/assets";
 import Loading from "@/components/Loading";
+import { useAuth } from "@clerk/nextjs";
+import axios from "axios";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 
 export default function StoreOrders() {
+      const { getToken } = useAuth();
       const [orders, setOrders] = useState([]);
       const [loading, setLoading] = useState(true);
       const [selectedOrder, setSelectedOrder] = useState(null);
       const [isModalOpen, setIsModalOpen] = useState(false);
 
-      const updateOrderStatus = async (orderId, status) => {
-            // Logic to update the status of an order
-      };
-
       const openModal = (order) => {
             setSelectedOrder(order)
             setIsModalOpen(true)
       };
-
       const closeModal = () => {
             setSelectedOrder(null)
             setIsModalOpen(false)
@@ -27,12 +26,39 @@ export default function StoreOrders() {
 
       const fetchOrders = async () => {
             try {
-                  const data = orderDummyData;
-                  setOrders(data);
+                  const token = await getToken();
+                  const { data } = await axios.get(
+                        "/api/store/orders",
+                        { headers: { Authorization: `Bearer ${token}` } }
+                  );
+                  setOrders(data.orders);
+            } catch (err) {
+                  toast.error(err?.response?.data?.error || err.message);
             } finally {
                   setLoading(false);
             }
       };
+
+      const updateOrderStatus = async (orderId, status) => {
+            try {
+                  const token = await getToken();
+                  await axios.post(
+                        "/api/store/orders",
+                        { orderId, status },
+                        { headers: { Authorization: `Bearer ${token}` } }
+                  );
+
+                  setOrders(prev =>
+                        prev.map(order =>
+                              order.id !== orderId ? order : { ...order, status }
+                        )
+                  );
+                  toast.success("Order status updated");
+            } catch (err) {
+                  toast.error(err?.response?.data?.error || err.message);
+            }
+      };
+
 
       useEffect(() => {
             fetchOrders();
