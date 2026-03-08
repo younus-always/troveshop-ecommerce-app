@@ -1,5 +1,4 @@
 "use client";
-import { orderDummyData } from "@/assets/assets";
 import Loading from "@/components/Loading";
 import { useAuth } from "@clerk/nextjs";
 import axios from "axios";
