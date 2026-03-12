@@ -4,6 +4,7 @@ import { PlusIcon, SquarePenIcon, XIcon } from "lucide-react";
 import AddressModal from "./AddressModal";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
+import { Protect } from "@clerk/nextjs";
 
 
 export default function OrderSummary({ totalPrice, items }) {
@@ -85,7 +86,9 @@ export default function OrderSummary({ totalPrice, items }) {
                               </div>
                               <div className='flex flex-col gap-1 font-medium text-right'>
                                     <p>{currency}{totalPrice.toLocaleString()}</p>
-                                    <p>Free</p>
+                                    <p>
+                                          <Protect plan={"plus"} fallback={`${currency}5`}>Free</Protect>
+                                    </p>
                                     {coupon && <p>{`-${currency}${(coupon.discount / 100 * totalPrice).toFixed(2)}`}</p>}
                               </div>
                         </div>
@@ -111,11 +114,14 @@ export default function OrderSummary({ totalPrice, items }) {
                   </div>
                   <div className='flex justify-between py-4'>
                         <p>Total:</p>
-                        <p className='font-medium text-right'>{currency}{coupon ? (totalPrice - (coupon.discount / 100 * totalPrice)).toFixed(2) : totalPrice.toLocaleString()}</p>
+                        <p className='font-medium text-right'>
+                              <Protect plan={"plus"} fallback={`${currency}${coupon ? (totalPrice + 5 - (coupon.discount / 100 * totalPrice)).toFixed(2) : (totalPrice + 5).toLocaleString()}`}>
+                              </Protect>
+                        </p>
                   </div>
                   <button onClick={e => toast.promise(handlePlaceOrder(e), { loading: 'placing Order...' })} className='w-full bg-slate-700 text-white py-2.5 rounded hover:bg-slate-900 active:scale-95 transition-all'>Place Order</button>
 
                   {showAddressModal && <AddressModal setShowAddressModal={setShowAddressModal} />}
-            </div>
+            </div >
       )
 }
