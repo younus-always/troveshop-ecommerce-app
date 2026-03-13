@@ -4,10 +4,14 @@ import { PlusIcon, SquarePenIcon, XIcon } from "lucide-react";
 import AddressModal from "./AddressModal";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
-import { Protect } from "@clerk/nextjs";
+import { Protect, useAuth, useUser } from "@clerk/nextjs";
+import toast from "react-hot-toast";
+import axios from "axios";
 
 
 export default function OrderSummary({ totalPrice, items }) {
+      const { user } = useUser();
+      const { getToken } = useAuth();
       const router = useRouter();
       const [coupon, setCoupon] = useState('');
       const [paymentMethod, setPaymentMethod] = useState('COD');
@@ -17,7 +21,25 @@ export default function OrderSummary({ totalPrice, items }) {
       const addressList = useSelector(state => state.address.list);
       const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || '$';
 
-      const handleCouponCode = (event) => event.preventDefault();
+      const handleCouponCode = async (e) => {
+            e.preventDefault();
+            try {
+                  if (!user) {
+                        return toast("Please login to proceed");
+                  };
+
+                  const token = await getToken();
+                  const { data } = await axios.post(
+                        "/api/coupon",
+                        { code: couponCodeInput },
+                        { headers: { Authorization: `Bearer ${token}` } }
+                  );
+                  setCoupon(data.coupon);
+                  toast.success("Coupon Applied");
+            } catch (err) {
+                  toast.error(err?.response?.data?.error || err.message);
+            }
+      };
 
       const handlePlaceOrder = (e) => {
             e.preventDefault();
