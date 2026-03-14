@@ -109,4 +109,35 @@ export const POST = async (request) => {
             console.error(err);
             return NextResponse.json({ error: err.code || err.message }, { status: 400 });
       }
-}
+};
+
+export const GET = async (request) => {
+      try {
+            const { userId } = getAuth(request);
+            const orders = await prisma.order.findMany({
+                  where: {
+                        userId,
+                        OR: [
+                              { paymentMethod: paymentMethod.COD },
+                              {
+                                    AND: [{ paymentMethod: paymentMethod.STRIPE },
+                                    { isPad: true }
+                                    ]
+                              }
+                        ]
+                  },
+                  include: {
+                        orderItems: {
+                              include: { product: true }
+                        },
+                        address: true
+                  },
+                  orderBy: { createdAt: "desc" }
+            });
+
+            return NextResponse.json({ orders });
+      } catch (err) {
+            console.error(err);
+            return NextResponse.json({ error: err.code || err.message }, { status: 400 });
+      }
+};
