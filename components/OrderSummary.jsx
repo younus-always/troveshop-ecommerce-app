@@ -3,16 +3,18 @@ import { useState } from "react";
 import { PlusIcon, SquarePenIcon, XIcon } from "lucide-react";
 import AddressModal from "./AddressModal";
 import { useRouter } from "next/navigation";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Protect, useAuth, useUser } from "@clerk/nextjs";
 import toast from "react-hot-toast";
 import axios from "axios";
+import { fetchCart } from "@/lib/features/cart/cartSlice";
 
 
 export default function OrderSummary({ totalPrice, items }) {
       const { user } = useUser();
       const { getToken } = useAuth();
       const router = useRouter();
+      const dispatch = useDispatch();
       const [coupon, setCoupon] = useState('');
       const [paymentMethod, setPaymentMethod] = useState('COD');
       const [couponCodeInput, setCouponCodeInput] = useState('');
@@ -41,9 +43,42 @@ export default function OrderSummary({ totalPrice, items }) {
             }
       };
 
-      const handlePlaceOrder = (e) => {
+      const handlePlaceOrder = async (e) => {
             e.preventDefault();
-            router.push('/orders')
+            try {
+                  if (!user) {
+                        return toast("Please login to place order")
+                  };
+                  if (!selectedAddress) {
+                        return toast("Please select an address")
+                  };
+
+                  const token = await getToken();
+                  const orderData = {
+                        addressId: selectedAddress.id,
+                        items,
+                        paymentMethod
+                  };
+
+                  if (coupon) {
+                        orderData.couponCode = coupon.code
+                  };
+                  // Create order
+                  const { data } = await axios.post("/api/orders",
+                        orderData,
+                        { headers: { Authorization: `Bearer ${token}` } }
+                  );
+
+                  if (paymentMethod === "STRIPE") {
+                        window.location.href = data.session.url;
+                  } else {
+                        router.push("/orders");
+                        dispatch(fetchCart({ getToken }));
+                  };
+
+            } catch (err) {
+                  toast.error(err?.response?.data?.error || err.message);
+            }
       };
 
 
