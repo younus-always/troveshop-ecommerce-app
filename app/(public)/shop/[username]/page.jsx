@@ -1,12 +1,12 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
-import { dummyStoreData, productDummyData } from '@/assets/assets';
 import Loading from '@/components/Loading';
 import ProductCard from '@/components/ProductCard';
+import axios from 'axios';
 import { MailIcon, MapPinIcon } from 'lucide-react';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 
 
 export default function StoreShop() {
@@ -15,10 +15,16 @@ export default function StoreShop() {
       const [products, setProducts] = useState([]);
       const [storeInfo, setStoreInfo] = useState(null);
 
-      const fetchStoreData = () => {
-            setStoreInfo(dummyStoreData);
-            setProducts(productDummyData);
-            setLoading(false);
+      const fetchStoreData = async () => {
+            try {
+                  const { data } = await axios.get(`/api/store/data?username=${username}`);
+                  setStoreInfo(data.store);
+                  setProducts(data.store.Product);
+            } catch (err) {
+                  toast.error(err?.response?.data?.error || err.message);
+            } finally {
+                  setLoading(false);
+            }
       };
 
       useEffect(() => {

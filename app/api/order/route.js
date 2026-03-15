@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAuth } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
+import { PaymentMethod } from "@prisma/client";
 
 
 export const POST = async (request) => {
@@ -118,9 +119,9 @@ export const GET = async (request) => {
                   where: {
                         userId,
                         OR: [
-                              { paymentMethod: paymentMethod.COD },
+                              { paymentMethod: PaymentMethod.COD },
                               {
-                                    AND: [{ paymentMethod: paymentMethod.STRIPE },
+                                    AND: [{ paymentMethod: PaymentMethod.STRIPE },
                                     { isPad: true }
                                     ]
                               }
