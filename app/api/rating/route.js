@@ -34,3 +34,20 @@ export const POST = async (request) => {
       }
 };
 
+// Get all ratings for a user
+export const GET = async (request) => {
+      try {
+            const { userId } = getAuth(request);
+            if (!userId) {
+                  return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+            };
+
+            const ratings = await prisma.rating.findMany({
+                  where: { userId }
+            });
+            return NextResponse.json({ ratings });
+      } catch (err) {
+            console.error(err);
+            return NextResponse.json({ error: err?.response?.data?.error || err.message });
+      }
+};
